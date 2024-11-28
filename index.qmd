@@ -1,9 +1,9 @@
 ---
 title: "Self-reported life satisfaction, 2011 to 2023"
 subtitle: "Replicating the Our World in Data Grapher"
-author: "YOUR NAME HERE" # Remember to add your name!
-date: "16-10-2024"
-theme: united
+author: "Alisson" 
+date: "28-11-2024"
+theme: yeti
 ---
 
 <!-- Custom HTML to add logo [DO NOT EDIT THIS SECTION] -->
@@ -45,6 +45,7 @@ The main life evaluation question asked in the poll is the Cantril Life Ladder q
 
 > “Please imagine a ladder, with steps numbered from 0 at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?”
 
+::: {.panel-tabset}
 
 ## 🔢 Table
 
@@ -57,9 +58,32 @@ The main life evaluation question asked in the poll is the Cantril Life Ladder q
 
 # Create table
 
-"WRITE_YOUR_CODE_HERE"
-```
+## Do we need that for the NA?
+#cantril_table <-cantril %>%  
+ #filter( Year == 2011 | Year == 2023) %>% 
+  #pivot_wider(values_from = `Cantril ladder score`, names_from = Year) %>% 
+  #select(-Code) %>% 
+  #mutate(`Absolut change`= if_else(!is.na(`2011`) | !is.na(`2023`), `2023` - `2011`, NA_real_),
+         #`Relative change`= if_else(!is.na(`2011`) & !is.na(`2023`), scales::percent(round((`2023` - `2011`) / `2011`, 2)), NA_character_)) 
 
+
+
+cantril_table <-cantril %>%  
+  filter( Year == 2011 | Year == 2023) %>% 
+  pivot_wider(values_from = `Cantril ladder score`, names_from = Year) %>% 
+  select(-Code) %>% 
+  mutate(`Absolut change`= round(`2023` - `2011`,2),
+         `Relative change`= scales::percent(round((`2023` - `2011`) / `2011`, 2))) 
+
+
+reactable(cantril_table)
+
+
+
+```
+:::
+
+::: {.panel-tabset}
 
 ## 🌎 Map
 
@@ -98,17 +122,43 @@ cantril %>%
            ticktext = seq(0, 10, by = 2)) %>%
   layout(geo = g)
 ```
+:::
 
+:::{.panel-tabset}
 
 ## 📈 Simple Chart
 
-```{r}
+```{r, include=FALSE}
 # In this tab, create a simple line chart of the Cantril score over time for a few countries, similar to the one on the Our World in Data page.
 # Note that your chart will not have the ability to filter countries like the one on the Our World in Data page.
 
 # Create line chart
-"WRITE_YOUR_CODE_HERE"
+
+
+Cantril_chart <-cantril %>% 
+  filter(Country == "Armenia" | Country == "Brazil" | Country == "Canada" | Country == "Switzerland") 
+
+Cantril_chart_plot <- Cantril_chart %>% 
+  ggplot(mapping=aes(x=Year, y=`Cantril ladder score`)) +
+  geom_line(mapping=aes(color=Country))+
+  scale_y_continuous(limits = c(0,10))+
+  labs(title= "Cantril score over time") +
+  theme_minimal()
+
+Cantril_chart_plot
+
 ```
+
+
+```{r}
+
+
+ggplotly (Cantril_chart_plot)
+
+```
+:::
+
+:::{.panel-tabset}
 
 ## 📈 Advanced Chart
 
@@ -150,6 +200,7 @@ bscols(
   list(country_filter, cantril_plotly)
 )
 ```
+:::
 
 <!-- Custom javascript to set default values in the filter: -->
 <script>
